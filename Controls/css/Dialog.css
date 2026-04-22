@@ -1,0 +1,57 @@
+﻿.dlgbody
+{
+	background-color: #e6eefa ;
+	border-width: 1px;
+	border-style: solid;
+	border-color: darkGray;
+	padding: 3px;
+    width:550px;
+}
+.dlgheader
+{
+    background-color: Gray;
+	border-color: White;
+	border-width: 1px;
+	color:  white;
+    font-family:Tahoma;
+    font-size :14px;
+	font-weight: bold;
+	width: 100%;
+	height: 20px;
+    text-align:center;
+}
+
+.dlgboxbutton 
+{
+  width: 80px;
+  height: 25px;
+  font-size: 12px;
+  border-radius: 5px;
+  border-style :solid;
+  border-color: #4e4747 ;
+  color: black;
+  border-width: 1px;
+  background-image: linear-gradient(to bottom, rgba(158, 188, 250,0),rgba(158, 188, 250,1));
+  padding: 3px;
+  margin:5px;
+  z-index: 9999; 
+}
+.divButtons
+{
+    text-align:center;
+	width: 100%;
+}
+.dlgbackground
+{
+	background-color: #3753fc;
+	filter: alpha(opacity=30);
+	opacity: 0.3;
+}
+#divInput {
+    font-family: Arial; 
+    font-size: 14px; 
+    width: 100%;
+}
+.inline {
+        display: inline-block;
+    }
