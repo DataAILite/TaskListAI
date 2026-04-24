@@ -325,4 +325,3 @@ After editing, verify you have completed each step:
 
 **Wrong column/table names in queries** — Adjust `ourdbcase`, `csvdbcase`, and `userdbcase` to match your database's case sensitivity rules.
 
-**Crystal Reports errors** — Verify the `<businessObjects>` section is present and that Crystal Reports runtime is installed on the server.
