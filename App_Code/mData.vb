@@ -371,60 +371,14 @@ Public Module mData
 
             If myprovider = "InterSystems.Data.IRISClient" Then
                 mySQL = CorrectSQLforCache(mySQL)
-                Dim dataIRISConnection As New InterSystems.Data.IRISClient.IRISConnection
-                Dim dataCommand As New InterSystems.Data.IRISClient.IRISCommand
-                Dim ds As New System.Data.DataSet
-                dataIRISConnection = New InterSystems.Data.IRISClient.IRISConnection(myconstring)
+                Dim propResult As String = HasRecords_IRIS(mySQL, myconstring, myRecords)
+                If propResult = "RETURN_FALSE" Then Return False
 
-                If dataIRISConnection.State = ConnectionState.Closed Then dataIRISConnection.Open()
-                dataCommand.Connection = dataIRISConnection
-                dataCommand.CommandType = CommandType.Text
-                dataCommand.CommandTimeout = 300000
-                dataCommand.CommandText = mySQL
-                Dim dataAdapter As New InterSystems.Data.IRISClient.IRISDataAdapter(dataCommand)
-                ' catch "Incorrect list format" error and ignore it. It is an internal Cache
-                ' error and does not affect getting the data into the dataset.
-                ' All other errors are returned.
-                Try
-                    dataAdapter.Fill(ds)
-                Catch exc As Exception
-                    If Not exc.Message.ToUpper.StartsWith("INCORRECT LIST FORMAT:") Then
-                        Return False
-                    End If
-                End Try
-                'dataAdapter.Fill(ds)
-                If ds.Tables.Count > 0 Then myRecords = ds.Tables(0)
-                dataAdapter.Dispose()
-                dataCommand.Dispose()
-                dataIRISConnection.Close()
             ElseIf myprovider = "InterSystems.Data.CacheClient" Then
                 mySQL = CorrectSQLforCache(mySQL)
-                Dim dataCacheConnectionString As String = String.Empty
-                Dim dataCacheConnection As New InterSystems.Data.CacheClient.CacheConnection
-                Dim dataCommand As New InterSystems.Data.CacheClient.CacheCommand
-                Dim ds As New System.Data.DataSet
-                If myconstring = String.Empty Then
-                    myconstring = InterSystems.Data.CacheClient.CacheConnection.ConnectDlg()
-                End If
-                dataCacheConnection = New InterSystems.Data.CacheClient.CacheConnection(myconstring)
-                If dataCacheConnection.State = ConnectionState.Closed Then dataCacheConnection.Open()
-                dataCommand.Connection = dataCacheConnection
-                dataCommand.CommandType = CommandType.Text
-                dataCommand.CommandTimeout = 300000
-                dataCommand.CommandText = mySQL
-                Dim dataAdapter As New InterSystems.Data.CacheClient.CacheDataAdapter(dataCommand)
-                ' catch "Incorrect list format" error and ignore it. It is an internal Cache
-                ' error and does not affect getting the data into the dataset.
-                Try
-                    dataAdapter.Fill(ds)
-                Catch exc As Exception
-                    If Not exc.Message.ToUpper.StartsWith("INCORRECT LIST FORMAT:") Then
-                        Return False
-                    End If
-                End Try
-                'dataAdapter.Fill(ds)
-                If ds.Tables.Count > 0 Then myRecords = ds.Tables(0)
-                dataCacheConnection.Close()
+                Dim propResult As String = HasRecords_Cache(mySQL, myconstring, myRecords)
+                If propResult = "RETURN_FALSE" Then Return False
+
 
             ElseIf myprovider = "Npgsql" Then  'PostgreSQL  Npgsql
                 myconstring = CorrectConnstringForPostgres(myconstring, dbcase)
@@ -476,20 +430,7 @@ Public Module mData
                 myCommand.Dispose()
             ElseIf myprovider = "Oracle.ManagedDataAccess.Client" Then
                 mySQL = CorrectSQLforOracle(mySQL, myconstring)
-                Dim myConnection As Oracle.ManagedDataAccess.Client.OracleConnection
-                Dim myCommand As New Oracle.ManagedDataAccess.Client.OracleCommand
-                Dim myAdapter As Oracle.ManagedDataAccess.Client.OracleDataAdapter
-                myConnection = New Oracle.ManagedDataAccess.Client.OracleConnection(myconstring)
-                myCommand.Connection = myConnection
-                myCommand.CommandType = CommandType.Text
-                myCommand.CommandTimeout = 300000
-                myCommand.CommandText = mySQL
-                If myCommand.Connection.State = ConnectionState.Closed Then myCommand.Connection.Open()
-                myAdapter = New Oracle.ManagedDataAccess.Client.OracleDataAdapter(myCommand)
-                myAdapter.Fill(myRecords)
-                myAdapter.Dispose()
-                myCommand.Connection.Close()
-                myCommand.Dispose()
+                HasRecords_Oracle(mySQL, myconstring, myRecords)
 
             End If
             If myRecords.Rows.Count > 0 Then
@@ -533,60 +474,13 @@ Public Module mData
 
             If myprovider = "InterSystems.Data.IRISClient" Then
                 mySQL = CorrectSQLforCache(mySQL)
-                Dim dataIRISConnection As New InterSystems.Data.IRISClient.IRISConnection
-                Dim dataCommand As New InterSystems.Data.IRISClient.IRISCommand
-                Dim ds As New System.Data.DataSet
-                dataIRISConnection = New InterSystems.Data.IRISClient.IRISConnection(myconstring)
+                Dim propResult As String = CountOfRecords_IRIS(mySQL, myconstring, myRecords)
+                If propResult <> String.Empty Then Return propResult
 
-                If dataIRISConnection.State = ConnectionState.Closed Then dataIRISConnection.Open()
-                dataCommand.Connection = dataIRISConnection
-                dataCommand.CommandType = CommandType.Text
-                dataCommand.CommandTimeout = 300000
-                dataCommand.CommandText = mySQL
-                Dim dataAdapter As New InterSystems.Data.IRISClient.IRISDataAdapter(dataCommand)
-                ' catch "Incorrect list format" error and ignore it. It is an internal Cache
-                ' error and does not affect getting the data into the dataset.
-                ' All other errors are returned.
-                Try
-                    dataAdapter.Fill(ds)
-                Catch exc As Exception
-                    If Not exc.Message.ToUpper.StartsWith("INCORRECT LIST FORMAT:") Then
-                        Return "ERROR!! " & exc.Message
-                    End If
-                End Try
-                'dataAdapter.Fill(ds)
-                If ds.Tables.Count > 0 Then myRecords = ds.Tables(0)
-                dataAdapter.Dispose()
-                dataCommand.Dispose()
-                dataIRISConnection.Close()
             ElseIf myprovider = "InterSystems.Data.CacheClient" Then
                 mySQL = CorrectSQLforCache(mySQL)
-                Dim dataCacheConnectionString As String = String.Empty
-                Dim dataCacheConnection As New InterSystems.Data.CacheClient.CacheConnection
-                Dim dataCommand As New InterSystems.Data.CacheClient.CacheCommand
-                Dim ds As New System.Data.DataSet
-                If myconstring = String.Empty Then
-                    myconstring = InterSystems.Data.CacheClient.CacheConnection.ConnectDlg()
-                End If
-                dataCacheConnection = New InterSystems.Data.CacheClient.CacheConnection(myconstring)
-                If dataCacheConnection.State = ConnectionState.Closed Then dataCacheConnection.Open()
-                dataCommand.Connection = dataCacheConnection
-                dataCommand.CommandType = CommandType.Text
-                dataCommand.CommandTimeout = 300000
-                dataCommand.CommandText = mySQL
-                Dim dataAdapter As New InterSystems.Data.CacheClient.CacheDataAdapter(dataCommand)
-                ' catch "Incorrect list format" error and ignore it. It is an internal Cache
-                ' error and does not affect getting the data into the dataset.
-                Try
-                    dataAdapter.Fill(ds)
-                Catch exc As Exception
-                    If Not exc.Message.ToUpper.StartsWith("INCORRECT LIST FORMAT:") Then
-                        Return "ERROR!! " & exc.Message
-                    End If
-                End Try
-                'dataAdapter.Fill(ds)
-                If ds.Tables.Count > 0 Then myRecords = ds.Tables(0)
-                dataCacheConnection.Close()
+                Dim propResult As String = CountOfRecords_Cache(mySQL, myconstring, myRecords)
+                If propResult <> String.Empty Then Return propResult
 
             ElseIf myprovider = "Npgsql" Then  'PostgreSQL  Npgsql
                 myconstring = CorrectConnstringForPostgres(myconstring, dbcase)
@@ -637,21 +531,7 @@ Public Module mData
                 myCommand.Dispose()
             ElseIf myprovider = "Oracle.ManagedDataAccess.Client" Then
                 mySQL = CorrectSQLforOracle(mySQL, myconstring)
-                Dim myConnection As Oracle.ManagedDataAccess.Client.OracleConnection
-                Dim myCommand As New Oracle.ManagedDataAccess.Client.OracleCommand
-                Dim myAdapter As Oracle.ManagedDataAccess.Client.OracleDataAdapter
-                myConnection = New Oracle.ManagedDataAccess.Client.OracleConnection(myconstring)
-                myCommand.Connection = myConnection
-                myCommand.CommandType = CommandType.Text
-                myCommand.CommandTimeout = 300000
-                myCommand.CommandText = mySQL
-                If myCommand.Connection.State = ConnectionState.Closed Then myCommand.Connection.Open()
-                myAdapter = New Oracle.ManagedDataAccess.Client.OracleDataAdapter(myCommand)
-                myAdapter.Fill(myRecords)
-                myAdapter.Dispose()
-                myCommand.Connection.Close()
-                myCommand.Dispose()
-
+                Dim propResult As String = CountOfRecords_Oracle(mySQL, myconstring, myRecords)
                 If myRecords.Rows.Count > 0 Then
                     Return myRecords.Rows.Count.ToString
                 End If
@@ -767,87 +647,22 @@ Public Module mData
 
             If myprovider = "InterSystems.Data.IRISClient" Then
                 mySQL = CorrectSQLforCache(mySQL)
-                'fix upper case in InterSystems
-                If mySQL.ToUpper.IndexOf(" DISTINCT ") > 0 Then
+                Dim propResult As String = mRecords_IRIS(mySQL, er, myconstring, myRecords)
+                If propResult = "USE_DISTINCT" Then
                     er = GetDistinctDataViewWithProperCase(mySQL, myView, myconstring, myprovider)
                     Return myView
-                Else
-                    Dim dataIRISConnection As New InterSystems.Data.IRISClient.IRISConnection
-                    Dim dataCommand As New InterSystems.Data.IRISClient.IRISCommand
-                    Try
-                        Dim ds As New System.Data.DataSet
-                        dataIRISConnection = New InterSystems.Data.IRISClient.IRISConnection(myconstring)
-                        If dataIRISConnection.State = ConnectionState.Closed Then dataIRISConnection.Open()
-                        dataCommand.Connection = dataIRISConnection
-                        dataCommand.CommandType = CommandType.Text
-                        dataCommand.CommandTimeout = 300000
-                        dataCommand.CommandText = mySQL
-                        Dim dataAdapter As New InterSystems.Data.IRISClient.IRISDataAdapter(dataCommand)
-                        ' catch "Incorrect list format" error and ignore it. It is an internal Cache
-                        ' error and does not affect getting the data into the dataset.
-                        ' All other errors are returned.
-                        Try
-                            dataAdapter.Fill(ds)
-                        Catch exc As Exception
-                            If Not exc.Message.ToUpper.StartsWith("INCORRECT LIST FORMAT:") Then
-                                er = "ERROR!! " & exc.Message
-                                Return myView
-                            End If
-                        End Try
-                        'dataAdapter.Fill(ds)
-                        If ds.Tables.Count > 0 Then myRecords = ds.Tables(0)
-                        dataAdapter.Dispose()
-                    Catch ex As Exception
-                        'assign error er
-                        er = "ERROR!! " & ex.Message
-                    End Try
-                    dataCommand.Dispose()
-                    dataIRISConnection.Close()
+                ElseIf propResult = "RETURN_VIEW" Then
+                    Return myView
                 End If
 
             ElseIf myprovider = "InterSystems.Data.CacheClient" Then
                 mySQL = CorrectSQLforCache(mySQL)
-
-                If mySQL.ToUpper.IndexOf(" DISTINCT ") > 0 Then
+                Dim propResult As String = mRecords_Cache(mySQL, er, myconstring, myRecords)
+                If propResult = "USE_DISTINCT" Then
                     er = GetDistinctDataViewWithProperCase(mySQL, myView, myconstring, myprovider)
                     Return myView
-                Else
-                    Dim dataCacheConnectionString As String = String.Empty
-                    Dim dataCacheConnection As New InterSystems.Data.CacheClient.CacheConnection
-                    Dim dataCommand As New InterSystems.Data.CacheClient.CacheCommand
-                    Try
-                        Dim ds As New System.Data.DataSet
-                        If myconstring = String.Empty Then
-                            myconstring = InterSystems.Data.CacheClient.CacheConnection.ConnectDlg()
-                        End If
-                        dataCacheConnection = New InterSystems.Data.CacheClient.CacheConnection(myconstring)
-                        If dataCacheConnection.State = ConnectionState.Closed Then dataCacheConnection.Open()
-                        dataCommand.Connection = dataCacheConnection
-                        dataCommand.CommandType = CommandType.Text
-                        dataCommand.CommandTimeout = 300000
-                        dataCommand.CommandText = mySQL
-                        Dim dataAdapter As New InterSystems.Data.CacheClient.CacheDataAdapter(dataCommand)
-                        ' catch "Incorrect list format" error and ignore it. It is an internal Cache
-                        ' error and does not affect getting the data into the dataset.
-                        ' All other errors are returned.
-                        Try
-                            dataAdapter.Fill(ds)
-                        Catch exc As Exception
-                            If Not exc.Message.ToUpper.StartsWith("INCORRECT LIST FORMAT:") Then
-                                er = "ERROR!! " & exc.Message
-                                Return myView
-                            End If
-                        End Try
-                        'dataAdapter.Fill(ds)
-                        If ds.Tables.Count > 0 Then myRecords = ds.Tables(0)
-                        dataAdapter.Dispose()
-
-                    Catch ex As Exception
-                        'assign error er
-                        er = "ERROR!! " & ex.Message
-                    End Try
-                    dataCommand.Dispose()
-                    dataCacheConnection.Close()
+                ElseIf propResult = "RETURN_VIEW" Then
+                    Return myView
                 End If
 
             ElseIf myprovider = "MySql.Data.MySqlClient" Then
@@ -874,28 +689,7 @@ Public Module mData
 
             ElseIf myprovider = "Oracle.ManagedDataAccess.Client" Then
                 mySQL = CorrectSQLforOracle(mySQL, myconstring)
-                Dim myConnection As Oracle.ManagedDataAccess.Client.OracleConnection
-                Dim myCommand As New Oracle.ManagedDataAccess.Client.OracleCommand
-                Dim myAdapter As Oracle.ManagedDataAccess.Client.OracleDataAdapter
-
-                myConnection = New Oracle.ManagedDataAccess.Client.OracleConnection(myconstring)
-                myCommand.Connection = myConnection
-                myCommand.CommandType = CommandType.Text
-                myCommand.CommandTimeout = 300000
-                myCommand.CommandText = mySQL
-                If myCommand.Connection.State = ConnectionState.Closed Then myCommand.Connection.Open()
-                myAdapter = New Oracle.ManagedDataAccess.Client.OracleDataAdapter(myCommand)
-                Try
-                    myAdapter.Fill(myRecords)
-                Catch ex As Exception
-                    'assign error er
-                    'er = "ERROR!! " & ex.Message
-                End Try
-                myAdapter.Dispose()
-                myCommand.Connection.Close()
-                myCommand.Dispose()
-
-
+                mRecords_Oracle(mySQL, er, myconstring, myRecords)
 
             ElseIf myprovider = "Npgsql" Then  'PostgreSQL  Npgsql
                 Dim myConnection As Npgsql.NpgsqlConnection
@@ -2566,50 +2360,9 @@ Public Module mData
                 myprovider = myconprv
             End If
             If myprovider = "InterSystems.Data.IRISClient" Then
-                Dim dataCacheConnectionString As String = String.Empty
-                Dim dataCacheConnection As New InterSystems.Data.IRISClient.IRISConnection
-                Dim dataCommand As New InterSystems.Data.IRISClient.IRISCommand
-                dataCacheConnection = New InterSystems.Data.IRISClient.IRISConnection(myconstring)
-                If dataCacheConnection.State = ConnectionState.Closed Then dataCacheConnection.Open()
-                dataCommand.Connection = dataCacheConnection
-                dataCommand.CommandType = CommandType.StoredProcedure
-                dataCommand.CommandText = mySP
-                dataCommand.CommandTimeout = 300000
-                Dim i As Integer
-                If Nparameters > 0 Then
-                    For i = 0 To Nparameters - 1
-                        If Not ParamValue(i) Is Nothing Then
-                            dataCommand.Parameters.Add(ParamName(i).ToString, ParamValue(i))  'working !!!
-                        End If
-                    Next
-                End If
-                dataCommand.ExecuteNonQuery()
-                dataCommand.Dispose()
-                dataCacheConnection.Close()
+                r = RunSP_IRIS(mySP, Nparameters, ParamName, ParamType, ParamValue, myconstring)
             ElseIf myprovider = "InterSystems.Data.CacheClient" Then
-                Dim dataCacheConnectionString As String = String.Empty
-                Dim dataCacheConnection As New InterSystems.Data.CacheClient.CacheConnection
-                Dim dataCommand As New InterSystems.Data.CacheClient.CacheCommand
-                Dim ds As New System.Data.DataSet
-                If myconstring = String.Empty Then
-                    myconstring = InterSystems.Data.CacheClient.CacheConnection.ConnectDlg()
-                End If
-                dataCacheConnection = New InterSystems.Data.CacheClient.CacheConnection(myconstring)
-                If dataCacheConnection.State = ConnectionState.Closed Then dataCacheConnection.Open()
-                dataCommand.Connection = dataCacheConnection
-                dataCommand.CommandType = CommandType.StoredProcedure
-                dataCommand.CommandText = mySP
-                dataCommand.CommandTimeout = 300000
-                If Nparameters > 0 Then
-                    For i = 0 To Nparameters - 1
-                        If Not ParamValue(i) Is Nothing Then
-                            dataCommand.Parameters.Add(ParamName(i).ToString, ParamValue(i))  'working !!!
-                        End If
-                    Next
-                End If
-                dataCommand.ExecuteNonQuery()
-                dataCommand.Dispose()
-                dataCacheConnection.Close()
+                r = RunSP_Cache(mySP, Nparameters, ParamName, ParamType, ParamValue, myconstring)
             ElseIf myprovider = "MySql.Data.MySqlClient" Then
                 Dim ret As String = String.Empty
                 ret = CorrectSQLforMySql(ret, myconstring)
@@ -2637,31 +2390,7 @@ Public Module mData
                 myCommand.Connection.Close()
                 myCommand.Dispose()
             ElseIf myprovider = "Oracle.ManagedDataAccess.Client" Then
-
-                Dim myConnection As Oracle.ManagedDataAccess.Client.OracleConnection
-                Dim myCommand As New Oracle.ManagedDataAccess.Client.OracleCommand
-                myConnection = New Oracle.ManagedDataAccess.Client.OracleConnection(myconstring)
-                myCommand.Connection = myConnection
-                myCommand.CommandType = CommandType.StoredProcedure
-                myCommand.CommandTimeout = 300000
-                myCommand.CommandText = mySP
-                If myCommand.Connection.State = ConnectionState.Closed Then myCommand.Connection.Open()
-                Dim param(Nparameters) As MySqlParameter
-                For i = 0 To Nparameters - 1
-                    If ParamType(i) = "nvarchar" Then
-                        param(i) = New MySqlParameter("@" + ParamName(i), MySqlDbType.VarChar, 255, ParameterDirection.Input)
-                    ElseIf ParamType(i) = "datetime" Then
-                        param(i) = New MySqlParameter("@" + ParamName(i), MySqlDbType.DateTime, 255, ParameterDirection.Input)
-                    Else
-                        param(i) = New MySqlParameter("@" + ParamName(i), MySqlDbType.Int16, 255, ParameterDirection.Input)
-                    End If
-                    param(i).Value = ParamValue(i)
-                    myCommand.Parameters.Add(param(i))
-                Next
-                If myCommand.Connection.State = ConnectionState.Closed Then myCommand.Connection.Open()
-                myCommand.ExecuteNonQuery()
-                myCommand.Connection.Close()
-                myCommand.Dispose()
+                r = RunSP_Oracle(mySP, Nparameters, ParamName, ParamType, ParamValue, myconstring)
             Else
                 Dim myConnection As SqlConnection
                 Dim myCommand As New SqlClient.SqlCommand
@@ -2922,40 +2651,9 @@ Public Module mData
             End If
 
             If myprovider = "InterSystems.Data.IRISClient" Then
-                Dim dataCacheConnection As New InterSystems.Data.IRISClient.IRISConnection
-                Dim dataCommand As New InterSystems.Data.IRISClient.IRISCommand
-                Dim ds As New System.Data.DataSet
-                dataCacheConnection = New InterSystems.Data.IRISClient.IRISConnection(myconstring)
-                Try
-                    If dataCacheConnection.State = ConnectionState.Closed Then dataCacheConnection.Open()
-                    If dataCacheConnection.State = ConnectionState.Open Then r = True
-                    dataCacheConnection.Close()
-                Catch ex As Exception
-                    er = ex.Message
-                    'dataCommand.Connection.Close()
-                    dataCommand.Dispose()
-                    dataCacheConnection.Dispose()
-                    r = False
-                End Try
+                r = DatabaseConnected_IRIS(myconstring, er)
             ElseIf myprovider = "InterSystems.Data.CacheClient" Then
-                Dim dataCacheConnection As New InterSystems.Data.CacheClient.CacheConnection
-                Dim dataCommand As New InterSystems.Data.CacheClient.CacheCommand
-                Dim ds As New System.Data.DataSet
-                If myconstring = String.Empty Then
-                    myconstring = InterSystems.Data.CacheClient.CacheConnection.ConnectDlg()
-                End If
-                dataCacheConnection = New InterSystems.Data.CacheClient.CacheConnection(myconstring)
-                Try
-                    If dataCacheConnection.State = ConnectionState.Closed Then dataCacheConnection.Open()
-                    If dataCacheConnection.State = ConnectionState.Open Then r = True
-                    dataCacheConnection.Close()
-                Catch ex As Exception
-                    er = ex.Message
-                    'dataCommand.Connection.Close()
-                    dataCommand.Dispose()
-                    dataCacheConnection.Dispose()
-                    r = False
-                End Try
+                r = DatabaseConnected_Cache(myconstring, er)
             ElseIf myprovider = "MySql.Data.MySqlClient" Then
                 Dim myConnection As MySqlConnection
                 myConnection = New MySqlConnection(myconstring)
@@ -2971,19 +2669,7 @@ Public Module mData
                     r = False
                 End Try
             ElseIf myprovider = "Oracle.ManagedDataAccess.Client" Then
-                Dim myConnection As Oracle.ManagedDataAccess.Client.OracleConnection
-                myConnection = New Oracle.ManagedDataAccess.Client.OracleConnection(myconstring)
-                Try
-                    If myConnection.State = ConnectionState.Closed Then myConnection.Open()
-                    If myConnection.State = ConnectionState.Open Then r = True
-                    myConnection.Close()
-                    myConnection.Dispose()
-                Catch ex As Exception
-                    myConnection.Close()
-                    myConnection.Dispose()
-                    er = ex.Message
-                    r = False
-                End Try
+                r = DatabaseConnected_Oracle(myconstring, er)
             ElseIf myprovider = "System.Data.Odbc" Then
                 myconstring = myconstring.Replace("Password", "Pwd").Replace("User ID", "UID")
                 Dim myConnection As System.Data.Odbc.OdbcConnection
@@ -3106,52 +2792,12 @@ Public Module mData
             End If
             If myprovider = "InterSystems.Data.IRISClient" Then
                 SQLq = CorrectSQLforCache(SQLq)
-                Dim dataIRISConnection As New InterSystems.Data.IRISClient.IRISConnection
-                Dim dataCommand As New InterSystems.Data.IRISClient.IRISCommand
-                Dim ds As New System.Data.DataSet
-                dataIRISConnection = New InterSystems.Data.IRISClient.IRISConnection(myconstring)
-                Try
-                    If dataIRISConnection.State = ConnectionState.Closed Then dataIRISConnection.Open()
-                    dataCommand.Connection = dataIRISConnection
-                    dataCommand.CommandType = CommandType.Text
-                    dataCommand.CommandTimeout = 300000
-                    dataCommand.CommandText = SQLq
-                    dataCommand.ExecuteNonQuery()
-                    dataCommand.Dispose()
-                    dataIRISConnection.Close()
-                Catch ex As Exception
-                    'dataCommand.Connection.Close()
-                    dataCommand.Dispose()
-                    dataIRISConnection.Dispose()
-                    r = ex.Message
-                    Return r
-                End Try
+                r = ExequteSQLquery_IRIS(SQLq, myconstring)
+                If r <> "Query executed fine." Then Return r
             ElseIf myprovider = "InterSystems.Data.CacheClient" Then
                 SQLq = CorrectSQLforCache(SQLq)
-                'Dim dataCacheConnectionString As String = String.Empty
-                Dim dataCacheConnection As New InterSystems.Data.CacheClient.CacheConnection
-                Dim dataCommand As New InterSystems.Data.CacheClient.CacheCommand
-                Dim ds As New System.Data.DataSet
-                If myconstring = String.Empty Then
-                    myconstring = InterSystems.Data.CacheClient.CacheConnection.ConnectDlg()
-                End If
-                dataCacheConnection = New InterSystems.Data.CacheClient.CacheConnection(myconstring)
-                Try
-                    If dataCacheConnection.State = ConnectionState.Closed Then dataCacheConnection.Open()
-                    dataCommand.Connection = dataCacheConnection
-                    dataCommand.CommandType = CommandType.Text
-                    dataCommand.CommandTimeout = 300000
-                    dataCommand.CommandText = SQLq
-                    dataCommand.ExecuteNonQuery()
-                    dataCommand.Dispose()
-                    dataCacheConnection.Close()
-                Catch ex As Exception
-                    'dataCommand.Connection.Close()
-                    dataCommand.Dispose()
-                    dataCacheConnection.Dispose()
-                    r = ex.Message
-                    Return r
-                End Try
+                r = ExequteSQLquery_Cache(SQLq, myconstring)
+                If r <> "Query executed fine." Then Return r
             ElseIf myprovider = "MySql.Data.MySqlClient" Then
                 SQLq = CorrectSQLforMySql(SQLq, myconstring)
                 Dim myConnection As MySqlConnection
@@ -3199,26 +2845,8 @@ Public Module mData
                 End Try
             ElseIf myprovider = "Oracle.ManagedDataAccess.Client" Then
                 SQLq = CorrectSQLforOracle(SQLq, myconstring)
-                Dim myConnection As Oracle.ManagedDataAccess.Client.OracleConnection
-                Dim myCommand As New Oracle.ManagedDataAccess.Client.OracleCommand
-                myConnection = New Oracle.ManagedDataAccess.Client.OracleConnection(myconstring)
-                Try
-                    myCommand.Connection = myConnection
-                    myCommand.CommandType = CommandType.Text
-                    myCommand.CommandTimeout = 300000
-                    myCommand.CommandText = SQLq
-                    If myCommand.Connection.State = ConnectionState.Closed Then myCommand.Connection.Open()
-                    myCommand.ExecuteNonQuery()
-                    myCommand.Connection.Close()
-                    myCommand.Dispose()
-                    myConnection.Dispose()
-                Catch ex As Exception
-                    myCommand.Connection.Close()
-                    myCommand.Dispose()
-                    myConnection.Dispose()
-                    r = ex.Message
-                    Return r
-                End Try
+                r = ExequteSQLquery_Oracle(SQLq, myconstring)
+                If r <> "Query executed fine." Then Return r
 
             Else
                 SQLq = CorrectSQLforSQLServer(SQLq)
